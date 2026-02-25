@@ -1,0 +1,1 @@
+# Commerce infrastructure (adapters)

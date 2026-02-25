@@ -1,0 +1,16 @@
+
+> amsab-frontend@0.1.0 dev
+> next dev
+
+  ▲ Next.js 14.2.5
+  - Local:        http://localhost:3000
+  - Experiments (use with caution):
+    · proxyTimeout
+
+ ✓ Starting...
+ ✓ Ready in 1416ms
+ ✓ Compiled / in 492ms (834 modules)
+ GET / 200 in 599ms
+ ✓ Compiled /_not-found in 165ms (837 modules)
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 226ms
+ GET / 200 in 60ms

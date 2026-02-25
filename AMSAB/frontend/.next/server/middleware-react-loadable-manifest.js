@@ -1,0 +1,1 @@
+self.__REACT_LOADABLE_MANIFEST="{\"components/Dashboard.tsx -> ./LiveGraph\":{\"id\":\"components/Dashboard.tsx -> ./LiveGraph\",\"files\":[\"static/css/_app-pages-browser_src_components_LiveGraph_tsx.css\",\"static/chunks/_app-pages-browser_src_components_LiveGraph_tsx.js\"]}}"

@@ -1,0 +1,1 @@
+# External (internet) search adapters

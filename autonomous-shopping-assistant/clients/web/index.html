@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Personal Shopping Assistant</title>
+  <style>
+    :root {
+      --bg: #0f0f12;
+      --surface: #1a1a1f;
+      --border: #2a2a32;
+      --text: #e8e8ed;
+      --text-muted: #888;
+      --accent: #6366f1;
+      --accent-hover: #818cf8;
+      --card-bg: #222228;
+      --success: #22c55e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    header .status {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-left: auto;
+    }
+    header .status.connected { color: var(--success); }
+    #messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem 1.5rem 2rem;
+      max-width: 56rem;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .message {
+      margin-bottom: 1.25rem;
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-start;
+    }
+    .message.user { flex-direction: row-reverse; }
+    .message .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.875rem;
+      flex-shrink: 0;
+    }
+    .message.user .avatar { background: var(--accent); }
+    .message .bubble {
+      max-width: 75%;
+      padding: 0.75rem 1rem;
+      border-radius: 12px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      line-height: 1.5;
+    }
+    .message.user .bubble {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .message .meta {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+    .cards {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+    }
+    .card {
+      width: 160px;
+      padding: 0.75rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 0.875rem;
+    }
+    .card .title { font-weight: 600; margin-bottom: 0.25rem; }
+    .card .store { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.2rem; }
+    .card .price { color: var(--accent); }
+    .card.best-deal { border-color: var(--success); box-shadow: 0 0 0 1px var(--success); }
+    .card .badge { font-size: 0.65rem; background: var(--success); color: #fff; padding: 0.15rem 0.4rem; border-radius: 4px; margin-left: 0.25rem; }
+    .card button {
+      margin-top: 0.5rem;
+      width: 100%;
+      padding: 0.4rem 0.5rem;
+      background: var(--accent);
+      border: none;
+      border-radius: 6px;
+      color: #fff;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+    .card button:hover { background: var(--accent-hover); }
+    #input-area {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+    }
+    #input-wrap {
+      max-width: 56rem;
+      margin: 0 auto;
+      display: flex;
+      gap: 0.5rem;
+      align-items: flex-end;
+    }
+    #input {
+      flex: 1;
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 1rem;
+      resize: none;
+      min-height: 44px;
+      max-height: 120px;
+    }
+    #input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    #send {
+      padding: 0.75rem 1.25rem;
+      background: var(--accent);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    #send:hover { background: var(--accent-hover); }
+    #send:disabled { opacity: 0.5; cursor: not-allowed; }
+    .suggestions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    .suggestions button {
+      padding: 0.4rem 0.75rem;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .suggestions button:hover { border-color: var(--accent); color: var(--accent); }
+    .error { color: #ef4444; font-size: 0.875rem; margin-top: 0.25rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🛒 Personal Shopping Assistant</h1>
+    <span id="status" class="status">Connecting…</span>
+  </header>
+
+  <div id="messages"></div>
+
+  <div id="input-area">
+    <div id="input-wrap">
+      <textarea id="input" rows="1" placeholder="e.g. Find running shoes under $100, or add the first one to my cart" autofocus></textarea>
+      <button id="send">Send</button>
+    </div>
+    <div class="suggestions">
+      <button data-prompt="Find running shoes under $100">Find running shoes</button>
+      <button data-prompt="Show me wireless earbuds">Wireless earbuds</button>
+      <button data-prompt="Add the best one to my cart">Add best to cart</button>
+      <button data-prompt="What's in my cart?">View my cart</button>
+      <button data-prompt="Checkout">Checkout</button>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = window.location.origin;
+    const TENANT_ID = '00000000-0000-0000-0000-000000000001';
+
+    let sessionId = null;
+    const messagesEl = document.getElementById('messages');
+    const inputEl = document.getElementById('input');
+    const sendBtn = document.getElementById('send');
+    const statusEl = document.getElementById('status');
+
+    function setStatus(ok, text) {
+      statusEl.textContent = text || (ok ? 'Connected' : 'Disconnected');
+      statusEl.classList.toggle('connected', ok);
+    }
+
+    function addMessage(role, text, cards = [], suggestedActions = [], bestDeal = null) {
+      const div = document.createElement('div');
+      div.className = `message ${role}`;
+      const avatar = role === 'user' ? 'You' : '🛒';
+      const bestSourceId = bestDeal && bestDeal.sourceId ? bestDeal.sourceId : null;
+      let cardsHtml = '';
+      if (cards && cards.length) {
+        cardsHtml = '<div class="cards">' + cards.map((c, i) => {
+          const isBest = bestSourceId && c.sourceId === bestSourceId;
+          const store = c.storeName ? `<div class="store">${escapeHtml(c.storeName)}</div>` : '';
+          const badge = isBest ? '<span class="badge">Best deal</span>' : '';
+          const addBtn = (c.sourceId || c.productId) ? `<button type="button" data-add-cart="${escapeHtml(c.sourceId || c.productId)}" data-title="${escapeHtml(c.title || '')}" data-price="${c.price != null ? c.price : ''}">Add to cart</button>` : '';
+          return `
+          <div class="card ${isBest ? 'best-deal' : ''}">
+            <div class="title">${escapeHtml(c.title || c.productId || '')} ${badge}</div>
+            ${store}
+            <div class="price">$${c.price != null ? Number(c.price).toFixed(2) : '—'}</div>
+            ${addBtn}
+          </div>`;
+        }).join('') + '</div>';
+      }
+      let suggestionsHtml = '';
+      if (suggestedActions && suggestedActions.length) {
+        suggestionsHtml = '<div class="suggestions">' + suggestedActions.map(a => 
+          `<button type="button" data-prompt="${escapeHtml(a)}">${escapeHtml(a)}</button>`
+        ).join('') + '</div>';
+      }
+      div.innerHTML = `
+        <div class="avatar">${avatar}</div>
+        <div class="bubble">
+          <div>${escapeHtml(text)}</div>
+          ${cardsHtml}
+          ${suggestionsHtml}
+        </div>
+      `;
+      messagesEl.appendChild(div);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+
+      div.querySelectorAll('[data-add-cart]').forEach(btn => {
+        btn.addEventListener('click', () => send('Add the best one to my cart'));
+      });
+      div.querySelectorAll('[data-prompt]').forEach(btn => {
+        btn.addEventListener('click', () => send(btn.dataset.prompt));
+      });
+    }
+
+    function escapeHtml(s) {
+      const p = document.createElement('p');
+      p.textContent = s;
+      return p.innerHTML;
+    }
+
+    async function send(userText) {
+      const text = (userText || inputEl.value || '').trim();
+      if (!text) return;
+
+      inputEl.value = '';
+      addMessage('user', text);
+      sendBtn.disabled = true;
+
+      try {
+        const res = await fetch(`${API_BASE}/v1/tenants/${TENANT_ID}/sessions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId: sessionId,
+            channel: 'web',
+            message: { type: 'text', payload: { text } }
+          })
+        });
+
+        if (!res.ok) {
+          const err = await res.text();
+          throw new Error(err || `HTTP ${res.status}`);
+        }
+
+        const data = await res.json();
+        sessionId = data.sessionId || sessionId;
+
+        const reply = data.reply || {};
+        const replyText = reply.text || 'No response.';
+        const cards = reply.cards || [];
+        const suggestedActions = reply.suggestedActions || [];
+        const bestDeal = reply.bestDeal || null;
+
+        addMessage('assistant', replyText, cards, suggestedActions, bestDeal);
+        setStatus(true);
+      } catch (e) {
+        addMessage('assistant', 'Sorry, something went wrong: ' + e.message);
+        setStatus(false, 'Error');
+      } finally {
+        sendBtn.disabled = false;
+      }
+    }
+
+    sendBtn.addEventListener('click', () => send());
+    inputEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        send();
+      }
+    });
+
+    // Check API on load
+    fetch(`${API_BASE}/health`).then(r => setStatus(r.ok)).catch(() => setStatus(false, 'Cannot reach API'));
+
+    addMessage('assistant', "Hi! I'm your shopping assistant. Try “Find running shoes” or “What’s in my cart?”");
+  </script>
+</body>
+</html>
